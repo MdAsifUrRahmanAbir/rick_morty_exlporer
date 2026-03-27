@@ -3,12 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:get/get.dart';
 
 import '../utils/app_logger.dart';
-import '../../../app/routes/app_pages.dart';
 import 'local_storage_service.dart';
 import 'app_snackbar.dart';
+import 'connectivity_service.dart';
 
 final _log = appLogger(ApiMethod);
 
@@ -46,6 +45,10 @@ class ApiMethod {
     bool showErrorMessage = true,
   }) async {
     _log.i('|📍 GET $url');
+    if (!await ConnectivityService.isConnected()) {
+      ConnectivityService.showNoInternetToast();
+      return null;
+    }
     try {
       final res = await http
           .get(
@@ -59,7 +62,7 @@ class ApiMethod {
     } on SocketException {
       _log.e('SocketException on GET $url');
       if (showErrorMessage) {
-        AppSnackBar.error('Check your internet connection and try again.');
+        ConnectivityService.showNoInternetToast();
       }
       return null;
     } on TimeoutException {
@@ -84,6 +87,10 @@ class ApiMethod {
     bool showErrorMessage = true,
   }) async {
     _log.i('|📍 POST $url | body: $body');
+    if (!await ConnectivityService.isConnected()) {
+      ConnectivityService.showNoInternetToast();
+      return null;
+    }
     try {
       final res = await http
           .post(
@@ -98,7 +105,7 @@ class ApiMethod {
     } on SocketException {
       _log.e('SocketException on POST $url');
       if (showErrorMessage) {
-        AppSnackBar.error('Check your internet connection and try again.');
+        ConnectivityService.showNoInternetToast();
       }
       return null;
     } on TimeoutException {
@@ -189,15 +196,19 @@ class ApiMethod {
     if (res.statusCode == 401) {
       if (LocalStorage.hasToken()) {
         LocalStorage.signOut();
-        Get.offAllNamed(Routes.login);
+        // The instruction provided a garbled line here. Reverting to original commented out code.
+        // Navigator.of(AppPages.navigatorKey.currentContext!).pushNamedAndRemoveUntil(
+        //   '/login',
+        //   (route) => false,
+        // );
         return null;
       }
       // If no token, it's likely a login attempt failed — continue to error handling below
     }
-    // Server error
-    if (res.statusCode == 500) {
+    // Rate Limited (429)
+    if (res.statusCode == 429) {
       if (showErrorMessage) {
-        AppSnackBar.error('Internal server error. Please try again later.');
+        AppSnackBar.error('You are being rate-limited. Please wait 30 seconds and try again.');
       }
       return null;
     }

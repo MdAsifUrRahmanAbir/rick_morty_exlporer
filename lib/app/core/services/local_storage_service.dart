@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 
 // ── Key constants ────────────────────────────────────────────────────────────
@@ -13,6 +12,9 @@ const String _isDarkModeKey = 'isDarkModeKey';
 const String _languageKey = 'languageKey';
 const String _langSmallKey = 'langSmallKey';
 const String _langCapKey = 'langCapKey';
+const String _favoritesKey = 'favoritesKey';
+const String _overridesKey = 'overridesKey';
+const String _characterCacheKey = 'characterCacheKey';
 
 /// Static local storage utility backed by GetStorage.
 ///
@@ -71,7 +73,7 @@ class LocalStorage {
   static void switchTheme() {
     final current = isDarkMode();
     _box.write(_isDarkModeKey, !current);
-    Get.changeThemeMode(current ? ThemeMode.light : ThemeMode.dark);
+    // Theme switching should be handled via Provider/ThemeController now
   }
 
   // ── Language ──────────────────────────────────────────────────────────────
@@ -83,8 +85,7 @@ class LocalStorage {
     await _box.write(_languageKey, name);
     await _box.write(_langSmallKey, langSmall);
     await _box.write(_langCapKey, langCap);
-    final locale = Locale(langSmall, langCap);
-    Get.updateLocale(locale);
+    // Locale updates should be handled via Provider/LocaleController now
   }
 
   static List<String> getLanguage() => [
@@ -101,5 +102,75 @@ class LocalStorage {
     await _box.remove(_imageKey);
     await _box.remove(_isLoggedInKey);
     // Keep onboard status — user has already seen it
+  }
+
+  // ── Rick & Morty Explorer ───────────────────────────────────────────────
+  
+  // Favorites (storing ID and full object for offline access)
+  static List<int> getFavoriteIds() =>
+      List<int>.from(_box.read(_favoritesKey) ?? []);
+
+  static Future<void> saveFavorite(int id, Map<String, dynamic> characterJson) async {
+    final list = getFavoriteIds();
+    if (!list.contains(id)) {
+      list.add(id);
+      await _box.write(_favoritesKey, list);
+    }
+    // Also save the object data
+    final dataBox = Map<String, dynamic>.from(_box.read('favoriteData') ?? {});
+    dataBox[id.toString()] = characterJson;
+    await _box.write('favoriteData', dataBox);
+  }
+
+  static Future<void> removeFavorite(int id) async {
+    final list = getFavoriteIds();
+    if (list.contains(id)) {
+      list.remove(id);
+      await _box.write(_favoritesKey, list);
+    }
+    // Also remove the object data
+    final dataBox = Map<String, dynamic>.from(_box.read('favoriteData') ?? {});
+    dataBox.remove(id.toString());
+    await _box.write('favoriteData', dataBox);
+  }
+
+  static List<Map<String, dynamic>> getFavoriteObjects() {
+    final dataBox = Map<String, dynamic>.from(_box.read('favoriteData') ?? {});
+    return dataBox.values.map((e) => Map<String, dynamic>.from(e)).toList();
+  }
+
+  static bool isFavoriteChar(int id) => getFavoriteIds().contains(id);
+
+  // Overrides
+  static Map<String, dynamic> getOverrides() =>
+      Map<String, dynamic>.from(_box.read(_overridesKey) ?? {});
+
+  static Future<void> saveOverride(int id, Map<String, dynamic> data) async {
+    final map = getOverrides();
+    map[id.toString()] = data;
+    _box.write(_overridesKey, map);
+  }
+
+  static Map<String, dynamic>? getOverride(int id) {
+    final map = getOverrides();
+    return map[id.toString()];
+  }
+
+  static Future<void> removeOverride(int id) async {
+    final map = getOverrides();
+    map.remove(id.toString());
+    await _box.write(_overridesKey, map);
+  }
+
+  // API Cache (for offline)
+  static Future<void> cacheCharacters(int page, Map<String, dynamic> data) async {
+    final cache = Map<String, dynamic>.from(_box.read(_characterCacheKey) ?? {});
+    cache[page.toString()] = data;
+    _box.write(_characterCacheKey, cache);
+  }
+
+  static Map<String, dynamic>? getCachedCharacters(int page) {
+    final cache = Map<String, dynamic>.from(_box.read(_characterCacheKey) ?? {});
+    return cache[page.toString()];
   }
 }

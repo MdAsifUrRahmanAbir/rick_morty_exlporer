@@ -2,26 +2,29 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // --------------------
-  // Brand / Daraz Colors
+  // Brand / Portal Colors
   // --------------------
-  static const Color primary = Color(0xFFFF6000); // Daraz Orange
-  static const Color primaryDark = Color(0xFFE05200);
-  static const Color primaryLight = Color(0xFFFF8C00);
-
-  static const Color bg = Color(0xFFF5F5F5); // Daraz Background
-  static const Color yellow = Color(0xFFFFC200); // Daraz Yellow
-
-  static const Color accent = Color(0xFFFFC107);
-  static const Color accentLight = Color(0xFFFFF350);
-  static const Color accentDark = Color(0xFFC79100);
+  // Primary green like the portal
+  // Modern Brand Colors
+  static const Color primary = Color(0xFF6750A4);
+  static const Color primaryDark = Color(0xFF4F378B);
+  static const Color primaryLight = Color(0xFFEADDFF);
+  static const Color onPrimary = Colors.white;
+  static const Color secondary = Color(0xFF625B71);
+  static const Color tertiary = Color(0xFF7D5260);
+  
+  // Rick & Morty Palette (Preserved but modernized)
+  static const Color portalGreen = Color(0xFF98CA4E);
+  static const Color rickCyan = Color(0xFFA6CDC6);
+  static const Color mortyYellow = Color(0xFFFAE04D);
 
   // --------------------
   // Background / Scaffold
   // --------------------
   static const Color scaffoldBackground = Color(0xFFF5F6FA);
   static const Color cardBackground = Colors.white;
-  static const Color darkScaffoldBackground = Color(0xFF1C1C1E);
-  static const Color darkCardBackground = Color(0xFF2C2C2E);
+  static const Color darkScaffoldBackground = Color(0xFF141414);
+  static const Color darkCardBackground = Color(0xFF202022);
 
   // --------------------
   // Text Colors

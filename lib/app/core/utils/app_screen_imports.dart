@@ -6,7 +6,7 @@
 ///
 library;
 export 'package:flutter/material.dart';
-export 'package:get/get.dart';
+export 'package:provider/provider.dart';
 
 // ── Core constants ────────────────────────────────────────────────────────────
 export '../constants/app_colors.dart';

@@ -1,83 +1,75 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import '../constants/app_colors.dart';
+import '../../routes/app_pages.dart';
 
-/// Centralised snackbar utility — Remitium's CustomSnackBar pattern adapted.
-///
-/// Usage:
-///   AppSnackBar.success('Profile updated!');
-///   AppSnackBar.error('Invalid email address.');
-///   AppSnackBar.info('Downloading...');
 class AppSnackBar {
   AppSnackBar._();
 
   static void success(String message) {
-    Get.snackbar(
-      'Success',
+    _showSnackBar(
       message,
-      snackPosition: SnackPosition.BOTTOM,
       backgroundColor: AppColors.success,
-      colorText: Colors.white,
-      leftBarIndicatorColor: Colors.white,
-      isDismissible: true,
-      animationDuration: const Duration(milliseconds: 400),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      borderRadius: 8,
-      icon: const Icon(Icons.check_circle_rounded, color: Colors.white),
-      mainButton: TextButton(
-        onPressed: Get.back,
-        child: const Text('Dismiss', style: TextStyle(color: Colors.white)),
-      ),
+      icon: Icons.check_circle_rounded,
     );
   }
 
   static void error(String message) {
-    Get.snackbar(
-      'Alert',
+    _showSnackBar(
       message,
-      snackPosition: SnackPosition.BOTTOM,
       backgroundColor: AppColors.error,
-      colorText: Colors.white,
-      leftBarIndicatorColor: AppColors.error,
-      isDismissible: true,
-      animationDuration: const Duration(milliseconds: 400),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      borderRadius: 8,
-      icon: const Icon(Icons.warning_rounded, color: Colors.white),
-      mainButton: TextButton(
-        onPressed: Get.back,
-        child: const Text('Dismiss', style: TextStyle(color: Colors.white)),
-      ),
+      icon: Icons.warning_rounded,
     );
   }
 
   static void info(String message) {
-    Get.snackbar(
-      'Info',
+    _showSnackBar(
       message,
-      snackPosition: SnackPosition.BOTTOM,
       backgroundColor: AppColors.info,
-      colorText: Colors.white,
-      isDismissible: true,
-      animationDuration: const Duration(milliseconds: 400),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      borderRadius: 8,
-      icon: const Icon(Icons.info_rounded, color: Colors.white),
+      icon: Icons.info_rounded,
     );
   }
 
   static void warning(String message) {
-    Get.snackbar(
-      'Warning',
+    _showSnackBar(
       message,
-      snackPosition: SnackPosition.BOTTOM,
       backgroundColor: AppColors.warning,
-      colorText: Colors.white,
-      isDismissible: true,
-      animationDuration: const Duration(milliseconds: 400),
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      borderRadius: 8,
-      icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
+      icon: Icons.warning_amber_rounded,
+    );
+  }
+
+  static void _showSnackBar(
+    String message, {
+    required Color backgroundColor,
+    required IconData icon,
+  }) {
+    AppPages.messengerKey.currentState?.hideCurrentSnackBar();
+    AppPages.messengerKey.currentState?.showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                message,
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 3),
+        action: SnackBarAction(
+          label: 'Dismiss',
+          textColor: Colors.white,
+          onPressed: () {
+            AppPages.messengerKey.currentState?.hideCurrentSnackBar();
+          },
+        ),
+      ),
     );
   }
 }

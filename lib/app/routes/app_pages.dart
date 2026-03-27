@@ -1,46 +1,41 @@
-import 'package:get/get.dart';
-
-import '../modules/splash/bindings/splash_binding.dart';
+import 'package:flutter/material.dart';
 import '../modules/splash/views/splash_view.dart';
-import '../modules/auth/login/bindings/login_binding.dart';
-import '../modules/auth/login/views/login_view.dart';
-import '../modules/profile/bindings/profile_binding.dart';
-import '../modules/profile/views/profile_view.dart';
-import '../modules/daraz_listing/bindings/daraz_listing_binding.dart';
-import '../modules/daraz_listing/views/daraz_listing_view.dart';
+import '../modules/character_screen/view/characters_screen.dart';
+import '../modules/character_detail/view/character_detail_screen.dart';
+import '../modules/favorites/view/favorites_screen.dart';
+import '../modules/edit_character/view/edit_character_screen.dart';
 
-part 'app_routes.dart';
+// Import centralized model
+import '../data/models/character_model.dart';
 
-/// GetX route configuration — all pages registered here.
 class AppPages {
   AppPages._();
 
-  static const initial = Routes.splash;
+  static final navigatorKey = GlobalKey<NavigatorState>();
+  static final messengerKey = GlobalKey<ScaffoldMessengerState>();
 
-  static final routes = [
-    GetPage(
-      name: Routes.splash,
-      page: () => const SplashView(),
-      binding: SplashBinding(),
-      transition: Transition.fadeIn,
-    ),
-    GetPage(
-      name: Routes.login,
-      page: () => const LoginView(),
-      binding: LoginBinding(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: Routes.profile,
-      page: () => const ProfileView(),
-      binding: ProfileBinding(),
-      transition: Transition.rightToLeft,
-    ),
-    GetPage(
-      name: Routes.darazListing,
-      page: () => const DarazListingView(),
-      binding: DarazListingBinding(),
-      transition: Transition.fadeIn,
-    ),
-  ];
+  static const initial = SplashView.route;
+
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case SplashView.route:
+        return MaterialPageRoute(builder: (_) => const SplashView());
+      case CharactersScreen.route:
+        return MaterialPageRoute(builder: (_) => const CharactersScreen());
+      case FavoritesScreen.route:
+        return MaterialPageRoute(builder: (_) => const FavoritesScreen());
+      case CharacterDetailScreen.route:
+        final char = settings.arguments as CharacterModel;
+        return MaterialPageRoute(builder: (_) => CharacterDetailScreen(character: char));
+      case EditCharacterScreen.route:
+        final char = settings.arguments as CharacterModel;
+        return MaterialPageRoute(builder: (_) => EditCharacterScreen(character: char));
+      default:
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            body: Center(child: Text('No route defined for ${settings.name}')),
+          ),
+        );
+    }
+  }
 }
