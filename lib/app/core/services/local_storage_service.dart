@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:get_storage/get_storage.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ── Key constants ────────────────────────────────────────────────────────────
 const String _tokenKey = 'tokenKey';
@@ -16,10 +16,10 @@ const String _favoritesKey = 'favoritesKey';
 const String _overridesKey = 'overridesKey';
 const String _characterCacheKey = 'characterCacheKey';
 
-/// Static local storage utility backed by GetStorage.
+/// Static local storage utility backed by SharedPreferences.
 ///
 /// Initialise once in `main()` before `runApp`:
-///   await GetStorage.init();
+///   await LocalStorage.init();
 ///
 /// Then use anywhere:
 ///   LocalStorage.saveToken(token: 'abc');
@@ -28,127 +28,152 @@ const String _characterCacheKey = 'characterCacheKey';
 class LocalStorage {
   LocalStorage._();
 
-  static GetStorage get _box => GetStorage();
+  static late SharedPreferences _prefs;
+
+  static Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+  }
 
   // ── Token ────────────────────────────────────────────────────────────────
   static Future<void> saveToken({required String token}) =>
-      _box.write(_tokenKey, token);
+      _prefs.setString(_tokenKey, token);
 
   static String? getToken() {
-    final t = _box.read<String>(_tokenKey);
-    debugPrint(t == null ? '## Token is null ##' : '## Token found ##');
-    return t;
+    return _prefs.getString(_tokenKey);
   }
 
   static bool hasToken() => getToken() != null;
 
   // ── User ─────────────────────────────────────────────────────────────────
   static Future<void> saveName({required String name}) =>
-      _box.write(_nameKey, name);
-  static String getName() => _box.read(_nameKey) ?? '';
+      _prefs.setString(_nameKey, name);
+  static String getName() => _prefs.getString(_nameKey) ?? '';
 
   static Future<void> saveEmail({required String email}) =>
-      _box.write(_emailKey, email);
-  static String getEmail() => _box.read(_emailKey) ?? '';
+      _prefs.setString(_emailKey, email);
+  static String getEmail() => _prefs.getString(_emailKey) ?? '';
 
   static Future<void> saveImage({required String url}) =>
-      _box.write(_imageKey, url);
-  static String? getImage() => _box.read<String>(_imageKey);
+      _prefs.setString(_imageKey, url);
+  static String? getImage() => _prefs.getString(_imageKey);
 
   // ── Auth State ────────────────────────────────────────────────────────────
   static Future<void> setLoggedIn({required bool value}) =>
-      _box.write(_isLoggedInKey, value);
-  static bool isLoggedIn() => _box.read(_isLoggedInKey) ?? false;
+      _prefs.setBool(_isLoggedInKey, value);
+  static bool isLoggedIn() => _prefs.getBool(_isLoggedInKey) ?? false;
 
   // ── Onboard ───────────────────────────────────────────────────────────────
   static Future<void> setOnboardDone({required bool value}) =>
-      _box.write(_isOnBoardKey, value);
-  static bool isOnboardDone() => _box.read(_isOnBoardKey) ?? false;
+      _prefs.setBool(_isOnBoardKey, value);
+  static bool isOnboardDone() => _prefs.getBool(_isOnBoardKey) ?? false;
 
   // ── Theme ─────────────────────────────────────────────────────────────────
   static Future<void> saveDarkMode({required bool isDark}) =>
-      _box.write(_isDarkModeKey, isDark);
-  static bool isDarkMode() => _box.read(_isDarkModeKey) ?? false;
+      _prefs.setBool(_isDarkModeKey, isDark);
+  static bool isDarkMode() => _prefs.getBool(_isDarkModeKey) ?? false;
 
   static void switchTheme() {
     final current = isDarkMode();
-    _box.write(_isDarkModeKey, !current);
-    // Theme switching should be handled via Provider/ThemeController now
+    _prefs.setBool(_isDarkModeKey, !current);
   }
 
   // ── Language ──────────────────────────────────────────────────────────────
   static Future<void> saveLanguage({
-    required String name, // e.g. 'English'
-    required String langSmall, // e.g. 'en'
-    required String langCap, // e.g. 'EN'
+    required String name,
+    required String langSmall,
+    required String langCap,
   }) async {
-    await _box.write(_languageKey, name);
-    await _box.write(_langSmallKey, langSmall);
-    await _box.write(_langCapKey, langCap);
-    // Locale updates should be handled via Provider/LocaleController now
+    await _prefs.setString(_languageKey, name);
+    await _prefs.setString(_langSmallKey, langSmall);
+    await _prefs.setString(_langCapKey, langCap);
   }
 
   static List<String> getLanguage() => [
-    _box.read(_langSmallKey) ?? 'en',
-    _box.read(_langCapKey) ?? 'EN',
-    _box.read(_languageKey) ?? 'English',
+    _prefs.getString(_langSmallKey) ?? 'en',
+    _prefs.getString(_langCapKey) ?? 'EN',
+    _prefs.getString(_languageKey) ?? 'English',
   ];
 
   // ── Sign Out ──────────────────────────────────────────────────────────────
   static Future<void> signOut() async {
-    await _box.remove(_tokenKey);
-    await _box.remove(_nameKey);
-    await _box.remove(_emailKey);
-    await _box.remove(_imageKey);
-    await _box.remove(_isLoggedInKey);
-    // Keep onboard status — user has already seen it
+    await _prefs.remove(_tokenKey);
+    await _prefs.remove(_nameKey);
+    await _prefs.remove(_emailKey);
+    await _prefs.remove(_imageKey);
+    await _prefs.remove(_isLoggedInKey);
   }
 
   // ── Rick & Morty Explorer ───────────────────────────────────────────────
   
-  // Favorites (storing ID and full object for offline access)
-  static List<int> getFavoriteIds() =>
-      List<int>.from(_box.read(_favoritesKey) ?? []);
+  // Favorites
+  static List<int> getFavoriteIds() {
+    final data = _prefs.getString(_favoritesKey);
+    if (data == null) return [];
+    try {
+      return List<int>.from(jsonDecode(data));
+    } catch (_) {
+      return [];
+    }
+  }
 
   static Future<void> saveFavorite(int id, Map<String, dynamic> characterJson) async {
     final list = getFavoriteIds();
     if (!list.contains(id)) {
       list.add(id);
-      await _box.write(_favoritesKey, list);
+      await _prefs.setString(_favoritesKey, jsonEncode(list));
     }
-    // Also save the object data
-    final dataBox = Map<String, dynamic>.from(_box.read('favoriteData') ?? {});
+    
+    final data = _prefs.getString('favoriteData');
+    final dataBox = data == null ? <String, dynamic>{} : Map<String, dynamic>.from(jsonDecode(data));
     dataBox[id.toString()] = characterJson;
-    await _box.write('favoriteData', dataBox);
+    await _prefs.setString('favoriteData', jsonEncode(dataBox));
   }
 
   static Future<void> removeFavorite(int id) async {
     final list = getFavoriteIds();
     if (list.contains(id)) {
       list.remove(id);
-      await _box.write(_favoritesKey, list);
+      await _prefs.setString(_favoritesKey, jsonEncode(list));
     }
-    // Also remove the object data
-    final dataBox = Map<String, dynamic>.from(_box.read('favoriteData') ?? {});
-    dataBox.remove(id.toString());
-    await _box.write('favoriteData', dataBox);
+    
+    final data = _prefs.getString('favoriteData');
+    if (data != null) {
+      try {
+        final dataBox = Map<String, dynamic>.from(jsonDecode(data));
+        dataBox.remove(id.toString());
+        await _prefs.setString('favoriteData', jsonEncode(dataBox));
+      } catch (_) {}
+    }
   }
 
   static List<Map<String, dynamic>> getFavoriteObjects() {
-    final dataBox = Map<String, dynamic>.from(_box.read('favoriteData') ?? {});
-    return dataBox.values.map((e) => Map<String, dynamic>.from(e)).toList();
+    final data = _prefs.getString('favoriteData');
+    if (data == null) return [];
+    try {
+      final dataBox = Map<String, dynamic>.from(jsonDecode(data));
+      return dataBox.values.map((e) => Map<String, dynamic>.from(e)).toList();
+    } catch (_) {
+      return [];
+    }
   }
 
   static bool isFavoriteChar(int id) => getFavoriteIds().contains(id);
 
   // Overrides
-  static Map<String, dynamic> getOverrides() =>
-      Map<String, dynamic>.from(_box.read(_overridesKey) ?? {});
+  static Map<String, dynamic> getOverrides() {
+    final data = _prefs.getString(_overridesKey);
+    if (data == null) return {};
+    try {
+      return Map<String, dynamic>.from(jsonDecode(data));
+    } catch (_) {
+      return {};
+    }
+  }
 
   static Future<void> saveOverride(int id, Map<String, dynamic> data) async {
     final map = getOverrides();
     map[id.toString()] = data;
-    _box.write(_overridesKey, map);
+    await _prefs.setString(_overridesKey, jsonEncode(map));
   }
 
   static Map<String, dynamic>? getOverride(int id) {
@@ -159,18 +184,25 @@ class LocalStorage {
   static Future<void> removeOverride(int id) async {
     final map = getOverrides();
     map.remove(id.toString());
-    await _box.write(_overridesKey, map);
+    await _prefs.setString(_overridesKey, jsonEncode(map));
   }
 
-  // API Cache (for offline)
+  // API Cache
   static Future<void> cacheCharacters(int page, Map<String, dynamic> data) async {
-    final cache = Map<String, dynamic>.from(_box.read(_characterCacheKey) ?? {});
+    final cacheJson = _prefs.getString(_characterCacheKey);
+    final cache = cacheJson == null ? <String, dynamic>{} : Map<String, dynamic>.from(jsonDecode(cacheJson));
     cache[page.toString()] = data;
-    _box.write(_characterCacheKey, cache);
+    await _prefs.setString(_characterCacheKey, jsonEncode(cache));
   }
 
   static Map<String, dynamic>? getCachedCharacters(int page) {
-    final cache = Map<String, dynamic>.from(_box.read(_characterCacheKey) ?? {});
-    return cache[page.toString()];
+    final cacheJson = _prefs.getString(_characterCacheKey);
+    if (cacheJson == null) return null;
+    try {
+      final cache = Map<String, dynamic>.from(jsonDecode(cacheJson));
+      return cache[page.toString()];
+    } catch (_) {
+      return null;
+    }
   }
 }

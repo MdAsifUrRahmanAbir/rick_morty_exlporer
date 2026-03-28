@@ -1,10 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_structure/app/modules/character_screen/provider/character_screen_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:my_structure/app/core/services/local_storage_service.dart';
+import 'package:my_structure/app/presentations/character_screen/provider/character_screen_provider.dart';
 
 void main() {
   late CharacterScreenProvider provider;
 
-  setUp(() {
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    await LocalStorage.init();
     provider = CharacterScreenProvider();
   });
 

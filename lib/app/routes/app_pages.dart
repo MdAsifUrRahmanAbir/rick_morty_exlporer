@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../modules/splash/views/splash_view.dart';
-import '../modules/character_screen/view/characters_screen.dart';
-import '../modules/character_detail/view/character_detail_screen.dart';
-import '../modules/favorites/view/favorites_screen.dart';
-import '../modules/edit_character/view/edit_character_screen.dart';
+import '../presentations/splash/views/splash_view.dart';
+import '../presentations/character_screen/view/characters_screen.dart';
+import '../presentations/character_detail/view/character_detail_screen.dart';
+import '../presentations/favorites/view/favorites_screen.dart';
+import '../presentations/edit_character/view/edit_character_screen.dart';
 
 // Import centralized model
 import '../data/models/character_model.dart';

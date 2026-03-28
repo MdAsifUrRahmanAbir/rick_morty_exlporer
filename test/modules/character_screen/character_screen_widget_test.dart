@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:my_structure/app/modules/character_screen/provider/character_screen_provider.dart';
+import 'package:my_structure/app/presentations/character_screen/provider/character_screen_provider.dart';
 
 class MockCharacterScreenProvider extends Mock implements CharacterScreenProvider {}
 
