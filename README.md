@@ -4,6 +4,12 @@ A premium, modern Flutter application for exploring the Rick and Morty multivers
 
 ---
 
+## 📺 Video Demo
+Check out the full app walkthrough and feature demonstration on YouTube:
+**[Watch the Demo Video](https://youtu.be/CF0OkhvU-uI)**
+
+---
+
 ## 🚀 Getting Started
 
 Follow these steps to set up and run the application on your local machine:

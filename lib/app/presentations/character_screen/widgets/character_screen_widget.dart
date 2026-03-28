@@ -71,5 +71,4 @@ class CharacterScreenWidget extends StatelessWidget {
       ],
     );
   }
-
 }
