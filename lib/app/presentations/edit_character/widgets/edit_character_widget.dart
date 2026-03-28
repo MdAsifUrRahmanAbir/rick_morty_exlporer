@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_strings.dart';
 import '../../../widgets/primary_button.dart';
-import '../../../data/models/character_model.dart';
+import '../../character_screen/model/character_model.dart';
 import 'edit_field_widget.dart';
 import 'edit_choice_chip_group.dart';
 import 'edit_section_header.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../data/models/character_model.dart';
+import '../model/character_model.dart';
 import '../../favorites/provider/favorites_provider.dart';
 import '../provider/character_screen_provider.dart';
 import 'character_card_widget.dart';
@@ -73,19 +73,16 @@ class CharacterScreenWidget extends StatelessWidget {
   }
 
   Widget _buildSkeletonGrid() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: List.generate(3, (index) => 
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: Row(
-              children: [
-                Expanded(child: AspectRatio(aspectRatio: 0.75, child: _buildDummyCard())),
-                const SizedBox(width: 16),
-                Expanded(child: AspectRatio(aspectRatio: 0.75, child: _buildDummyCard())),
-              ],
-            ),
+    return Column(
+      children: List.generate(3, (index) =>
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Row(
+            children: [
+              Expanded(child: AspectRatio(aspectRatio: 0.75, child: _buildDummyCard())),
+              const SizedBox(width: 16),
+              Expanded(child: AspectRatio(aspectRatio: 0.75, child: _buildDummyCard())),
+            ],
           ),
         ),
       ),

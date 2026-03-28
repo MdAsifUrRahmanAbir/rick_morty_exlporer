@@ -3,7 +3,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/local_storage_service.dart';
 import '../../../core/services/connectivity_service.dart';
-import '../../../data/models/character_model.dart';
+import '../model/character_model.dart';
 
 class CharacterScreenProvider extends ChangeNotifier {
   final PagingController<int, CharacterModel> pagingController =

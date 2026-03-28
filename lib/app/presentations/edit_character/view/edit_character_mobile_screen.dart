@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_strings.dart';
-import '../../../data/models/character_model.dart';
+import '../../character_screen/model/character_model.dart';
 import '../../character_screen/provider/character_screen_provider.dart';
 import '../../character_detail/provider/character_detail_provider.dart';
 import '../../favorites/provider/favorites_provider.dart';

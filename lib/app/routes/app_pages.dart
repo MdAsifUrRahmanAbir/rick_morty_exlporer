@@ -6,7 +6,7 @@ import '../presentations/favorites/view/favorites_screen.dart';
 import '../presentations/edit_character/view/edit_character_screen.dart';
 
 // Import centralized model
-import '../data/models/character_model.dart';
+import '../presentations/character_screen/model/character_model.dart';
 
 class AppPages {
   AppPages._();

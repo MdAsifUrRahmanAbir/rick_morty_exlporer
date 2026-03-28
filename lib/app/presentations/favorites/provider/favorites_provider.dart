@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/local_storage_service.dart';
-import '../../../data/models/character_model.dart';
+import '../../character_screen/model/character_model.dart';
 
 class FavoritesProvider extends ChangeNotifier {
   

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../data/models/character_model.dart';
+import '../../character_screen/model/character_model.dart';
 import 'character_detail_header.dart';
 import 'character_info_card.dart';
 import 'character_location_card.dart';

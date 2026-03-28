@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../data/models/character_model.dart';
+import '../model/character_model.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/services/local_storage_service.dart';
 import '../../../widgets/text_widget.dart';

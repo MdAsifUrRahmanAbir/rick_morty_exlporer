@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../widgets/responsive.dart';
-import '../../../data/models/character_model.dart';
+import '../../character_screen/model/character_model.dart';
 import 'edit_character_mobile_screen.dart';
 import 'edit_character_tab_screen.dart';
 

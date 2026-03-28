@@ -1,64 +1,63 @@
 # 🌌 Rick & Morty Character Explorer
 
-Welcome to the ultimate guide for exploring the characters of the Rick and Morty multiverse! This app is designed to be fast, beautiful, and easy to use.
+A premium, modern Flutter application for exploring the Rick and Morty multiverse, featuring real-time synchronization, advanced filtering, and a robust offline experience.
 
 ---
 
-## 🚀 How to Start the App
+## 🚀 Getting Started
 
-### **1. Get the Code**
-Download or clone this folder to your computer.
+Follow these steps to set up and run the application on your local machine:
 
-### **2. Prepare Your Tools**
-*   **For VS Code:** Install the **Flutter** and **Dart** extensions from the Extensions marketplace.
-*   **For Android Studio:** Go to `Plugins`, search for **Flutter**, and click install. This will also install Dart.
-*   **For Your Phone (Physical Device):**
-    *   Go to `Settings` -> `About Phone`.
-    *   Tap `Build Number` **7 times** until you see "You are now a developer."
-    *   Go to `Developer Options` and enable **USB Debugging**.
+### **1. Prerequisites**
+*   **Flutter SDK**: [Install Flutter](https://docs.flutter.dev/get-started/install) (version 3.x recommended).
+*   **IDE**: [VS Code](https://code.visualstudio.com/) or [Android Studio](https://developer.android.com/studio).
+*   **Environment**: An Android emulator or a physical device with **USB Debugging** enabled.
 
-### **3. Install the App Dependencies**
-Open your terminal (in VS Code or Android Studio) and type:
-```bash
-flutter pub get
-```
-
-### **4. Launch the Multiverse**
-Plug in your phone or start an emulator and type:
-```bash
-flutter run
-```
-*Tip: If the app gets stuck on the loading screen, just **Stop** it and **Start** it again.*
+### **2. Setup Instructions**
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/MdAsifUrRahmanAbir/rick_morty_exlporer.git
+    cd rick_morty_exlporer
+    ```
+2.  **Install dependencies**:
+    ```bash
+    flutter pub get
+    ```
+3.  **Run the application**:
+    ```bash
+    flutter run
+    ```
 
 ---
 
-## 🧠 Why We Built It This Way
+## 🏗️ Architecture & Choices
 
-### **State Management: The Smart Brain (Provider)**
-We chose **Provider** to manage the app’s "brain." 
-*   **Reasoning:** It is reliable, fast, and ensures that when you edit a character, the whole app updates instantly without any glitches. It keeps the code clean and easy to follow.
+### **State Management: Provider**
+We chose **Provider** for its industry-standard reliability and lightweight footprint.
+*   **Reasoning**: It provides a clean "source of truth" for character data across different screens (List, Details, Favorites), ensuring that local edits are reflected instantly without complex boilerplate.
 
-### **Storage: The Digital Notebook (GetStorage)**
-We use **GetStorage** to save your changes and favorites.
-*   **Explanation:** Think of it as a super-fast digital notebook. Every time you change a character's name or heart them, the app writes it down instantly. Even if you turn off your phone, your multiverse remains exactly how you left it.
+### **Storage: SharedPreferences (JSON Cache)**
+We use a wrapped **SharedPreferences** service for persistent data.
+*   **Explanation**: Character data, favorites, and local overrides (edits) are serialized to JSON and stored locally. This approach ensures high-speed access and a seamless offline-first experience.
 
-### **Network: Zero-Latency Search**
-Traditional apps make you wait while searching. We designed our search to be **Local-First**. We search through characters you've already seen on your device, which means zero waiting and no "Rate Limit" errors from the server while you explore.
+### **Loading Experience: Skeletonizer**
+The app features a premium **Skeleton Loading** effect.
+*   **Reasoning**: Instead of generic spinners, we use shimmer-based placeholders that match the UI layout, providing a smoother perceived performance during API fetches.
 
 ---
 
-## ✨ Main Features
-*   **Favorites:** Tap the heart icon to save characters you love.
-*   **Edit Characters:** Change names, status, or species locally.
-*   **The Safety Net:** Tap the **Restore Icon $(\circlearrowleft)$** on any edited card to bring back the original data.
-*   **Offline Mode:** Browse the characters you've already found even without internet.
+## ✨ Core Features
+*   **Live Filtering**: Search by name or filter by status (Alive/Dead) and species (Human/Alien) with automatic API synchronization.
+*   **Local Overrides**: Edit any character's details locally. Changes stay on your device even after app restarts.
+*   **True Persistence**: Favorite characters are cached and remain accessible even when you're offline.
+*   **Smart Navigation**: Optimized for a deep-linking feel, including automatic removal of intermediate routes when returning to the main list.
 
 ---
 
 ## ⚠️ Known Limitations
-*   **New Discoveries:** You still need internet to find new characters you haven't seen before.
-*   **Search Scope:** Currently, the search only looks through characters that have already been loaded into your list.
-*   **Images:** Photos of characters might not appear offline if they were never loaded while you had internet.
+*   **Offline New Content**: Internet is required to fetch characters you haven't previously cached.
+*   **Local Search Scope**: The search bar queries the characters currently loaded in the list to maintain zero-latency performance.
+*   **Media Caching**: Character images rely on the `cached_network_image` library; images that haven't been viewed while online may not appear in offline mode.
 
 ---
 *Built with love for the multiverse.*

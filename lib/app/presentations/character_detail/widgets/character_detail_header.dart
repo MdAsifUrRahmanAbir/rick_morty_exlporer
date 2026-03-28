@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../widgets/text_widget.dart';
-import '../../../data/models/character_model.dart';
+import '../../character_screen/model/character_model.dart';
 
 class CharacterDetailHeader extends StatelessWidget {
   final CharacterModel char;

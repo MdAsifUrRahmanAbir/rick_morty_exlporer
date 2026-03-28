@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../data/models/character_model.dart';
+import '../../character_screen/model/character_model.dart';
 import '../provider/favorites_provider.dart';
 import '../../character_screen/provider/character_screen_provider.dart';
 import '../../character_screen/widgets/character_card_widget.dart';

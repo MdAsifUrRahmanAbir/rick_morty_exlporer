@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../data/models/character_model.dart';
+import '../../character_screen/model/character_model.dart';
 import '../../character_screen/provider/character_screen_provider.dart';
 import '../../favorites/provider/favorites_provider.dart';
 import '../provider/character_detail_provider.dart';
