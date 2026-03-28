@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import '../../../core/constants/app_sizes.dart';
 import '../model/character_model.dart';
 import '../../favorites/provider/favorites_provider.dart';
 import '../provider/character_screen_provider.dart';
@@ -9,6 +8,7 @@ import 'character_card_widget.dart';
 import 'search_and_filter_section.dart';
 import 'no_items_found_section.dart';
 import 'error_view_section.dart';
+import 'character_skeleton_grid.dart';
 
 class CharacterScreenWidget extends StatelessWidget {
   final Function(CharacterModel) onCharacterTap;
@@ -61,7 +61,7 @@ class CharacterScreenWidget extends StatelessWidget {
                     },
                   ),
                 ),
-                firstPageProgressIndicatorBuilder: (_) => _buildSkeletonGrid(),
+                firstPageProgressIndicatorBuilder: (_) => const CharacterSkeletonGrid(),
                 firstPageErrorIndicatorBuilder: (context) => ErrorViewSection(provider: provider),
                 noItemsFoundIndicatorBuilder: (_) => NoItemsFoundSection(provider: provider),
               ),
@@ -72,40 +72,4 @@ class CharacterScreenWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildSkeletonGrid() {
-    return Column(
-      children: List.generate(3, (index) =>
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Row(
-            children: [
-              Expanded(child: AspectRatio(aspectRatio: 0.75, child: _buildDummyCard())),
-              const SizedBox(width: 16),
-              Expanded(child: AspectRatio(aspectRatio: 0.75, child: _buildDummyCard())),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDummyCard() {
-    return CharacterCardWidget(
-      character: CharacterModel(
-        id: 0,
-        name: 'Loading Name',
-        status: 'Alive',
-        species: 'Species',
-        type: '',
-        gender: 'Gender',
-        origin: CharacterLocation(name: 'Origin', url: ''),
-        location: CharacterLocation(name: 'Location', url: ''),
-        image: '',
-        episode: [],
-        url: '',
-        created: DateTime.now(),
-      ),
-      onTap: () {},
-    );
-  }
 }

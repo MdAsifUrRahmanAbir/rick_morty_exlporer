@@ -71,12 +71,18 @@ class CharacterDetailWidget extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        CharacterInfoCard(
-          label: 'TYPE', 
-          value: displayType, 
-          icon: Icons.info_outline, 
-          isDark: isDark
+        if(char.type.isNotEmpty) const SizedBox(height: 16),
+        if(char.type.isNotEmpty) Row(
+          children: [
+            Expanded(
+              child: CharacterInfoCard(
+                label: 'TYPE', 
+                value: displayType, 
+                icon: Icons.info_outline, 
+                isDark: isDark
+              ),
+            ),
+          ],
         ),
       ],
     );

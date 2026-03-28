@@ -3,6 +3,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/services/local_storage_service.dart';
 import '../../../core/services/connectivity_service.dart';
+import '../../../core/constants/app_endpoints.dart';
 import '../model/character_model.dart';
 
 class CharacterScreenProvider extends ChangeNotifier {
@@ -10,13 +11,12 @@ class CharacterScreenProvider extends ChangeNotifier {
       PagingController(firstPageKey: 1);
 
   // State
-  List<CharacterModel> _masterList = [];
+  final List<CharacterModel> _masterList = [];
   String _searchQuery = '';
   String _statusFilter = '';
   String _speciesFilter = '';
   bool _isLoading = false;
-
-  static const String _baseUrl = 'https://rickandmortyapi.com/api/character';
+  bool _isFetching = false;
 
   CharacterScreenProvider() {
     pagingController.addPageRequestListener((pageKey) {
@@ -26,14 +26,15 @@ class CharacterScreenProvider extends ChangeNotifier {
     });
   }
 
-  bool _isFetching = false;
-
   Future<void> _fetchPage(int pageKey) async {
     if (_isFetching) return;
     _isFetching = true;
+
     // Only return early if searching, as search is done locally on fetched data.
-    // Filtering (status/species) is now handled by the API.
-    if (_searchQuery.isNotEmpty) return;
+    if (_searchQuery.isNotEmpty) {
+      _isFetching = false;
+      return;
+    }
 
     if (pageKey == 1) {
       _isLoading = true;
@@ -47,18 +48,19 @@ class CharacterScreenProvider extends ChangeNotifier {
         if (_speciesFilter.isNotEmpty) 'species': _speciesFilter.toLowerCase(),
       };
       
-      final url = Uri.parse(_baseUrl).replace(queryParameters: queryParams).toString();
-      CharacterResponse? response;
-
-      final result = await ApiServices.get<CharacterResponse>(
+      final url = Uri.parse(AppEndpoints.characters).replace(queryParameters: queryParams).toString();
+      
+      // Remitium-style Pattern: ApiServices.get<Model>(Model.fromJson, url)
+      final response = await ApiServices.get<CharacterResponse>(
         CharacterResponse.fromJson,
         url,
         showErrorMessage: false,
       );
 
-      if (result != null) {
-        response = result;
-        // Only cache first page of unfiltered results
+      CharacterResponse? finalResponse = response;
+
+      if (response != null) {
+        // Cache management for offline-first experience
         if (pageKey == 1) {
           final cacheData = {
             'results': response.results.map((e) => e.toJson()).toList(),
@@ -71,26 +73,30 @@ class CharacterScreenProvider extends ChangeNotifier {
           await LocalStorage.cacheCharacters(pageKey, cacheData);
         }
       } else {
+        // Fallback to cache if offline
         if (pageKey == 1) {
           final cachedData = LocalStorage.getCachedCharacters(pageKey);
-          if (cachedData != null) response = CharacterResponse.fromJson(cachedData);
+          if (cachedData != null) {
+            finalResponse = CharacterResponse.fromJson(cachedData);
+          }
         }
       }
 
-      if (response == null) {
+      if (finalResponse == null) {
         pagingController.error = 'Failed to load characters. Are you offline?';
         return;
       }
 
-      // Add newly loaded characters to Master list
-      for (var char in response.results) {
+      // Add newly loaded characters to Master list for local filtering
+      for (var char in finalResponse.results) {
         if (!_masterList.any((e) => e.id == char.id)) {
           _masterList.add(char);
         }
       }
 
-      var resultsToAppend = response.results.map((char) => applyOverrides(char)).toList();
+      var resultsToAppend = finalResponse.results.map((char) => applyOverrides(char)).toList();
       
+      // Offline filtering logic if needed
       final isOnline = await ConnectivityService.isConnected();
       if (!isOnline && (_statusFilter.isNotEmpty || _speciesFilter.isNotEmpty)) {
         resultsToAppend = resultsToAppend.where((char) {
@@ -100,12 +106,14 @@ class CharacterScreenProvider extends ChangeNotifier {
         }).toList();
       }
 
-      final isLastPage = response.nextUrl == null;
+      final isLastPage = finalResponse.nextUrl == null;
       if (isLastPage) {
         pagingController.appendLastPage(resultsToAppend);
       } else {
         pagingController.appendPage(resultsToAppend, pageKey + 1);
       }
+    } catch (e) {
+      pagingController.error = e;
     } finally {
       if (pageKey == 1) {
         _isLoading = false;
@@ -117,7 +125,6 @@ class CharacterScreenProvider extends ChangeNotifier {
 
   bool get isLoading => _isLoading;
 
-  // Local Search & Filtering Implementation
   void setSearch(String query) {
     _searchQuery = query;
     _syncFilteredList();
@@ -132,7 +139,6 @@ class CharacterScreenProvider extends ChangeNotifier {
       _masterList.clear();
       pagingController.refresh();
     } else {
-      // Offline mode: Filter locally what we have and show a toast
       _syncFilteredList();
       ConnectivityService.showModernToast('No internet, filtering locally', isError: true);
     }
@@ -141,13 +147,11 @@ class CharacterScreenProvider extends ChangeNotifier {
 
   void _syncFilteredList() {
     if (_searchQuery.isEmpty && _statusFilter.isEmpty && _speciesFilter.isEmpty) {
-      // If nothing active, show all accumulated items
       pagingController.itemList = _masterList.map((e) => applyOverrides(e)).toList();
       notifyListeners();
       return;
     }
 
-    // Filter locally from master list
     final filtered = _masterList.where((char) {
       final matchesSearch = char.name.toLowerCase().contains(_searchQuery.toLowerCase());
       final matchesStatus = _statusFilter.isEmpty || char.status == _statusFilter;
@@ -163,8 +167,8 @@ class CharacterScreenProvider extends ChangeNotifier {
     _searchQuery = '';
     _statusFilter = '';
     _speciesFilter = '';
-    pagingController.refresh();
     _masterList.clear();
+    pagingController.refresh();
     notifyListeners();
   }
 
@@ -172,10 +176,9 @@ class CharacterScreenProvider extends ChangeNotifier {
   String get statusFilter => _statusFilter;
   String get speciesFilter => _speciesFilter;
 
-  // Reset Override
   Future<void> resetToApi(int id) async {
     await LocalStorage.removeOverride(id);
-    _syncFilteredList(); // Re-apply overrides (which will now be gone)
+    _syncFilteredList();
     notifyListeners();
   }
 
@@ -214,10 +217,8 @@ class CharacterScreenProvider extends ChangeNotifier {
     } else {
       LocalStorage.saveFavorite(character.id, character.toJson());
     }
-    // Update master list with override awareness (though toggleFavorite doesn't change core data)
     _syncFilteredList();
   }
-
 
   bool isFavorite(int id) => LocalStorage.isFavoriteChar(id);
 
